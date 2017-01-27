@@ -1,4 +1,4 @@
-export default class Container {
+export class Container {
   constructor(values = {}) {
     this.values = new Map()
     this.raw = new Map()

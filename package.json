@@ -1,13 +1,13 @@
 {
   "name": "sparkle",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "src/index.js",
   "repository": {},
   "author": "Christoph Hochstrasser",
   "license": "MIT",
   "scripts": {
-    "start": "node --harmony-async-await src/index",
-    "start-dev": "NODE_ENV=dev node --harmony-async-await src/index"
+    "start": "node --harmony-async-await bin/sparkle",
+    "start-dev": "NODE_ENV=dev node --harmony-async-await bin/sparkle"
   },
   "dependencies": {
     "chokidar": "^1.6.1",

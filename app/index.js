@@ -1,5 +1,5 @@
 import path from 'path'
-import {createApp} from '../src/app'
+import {createApp} from '../src'
 
 const app = createApp(Object.assign(
     require('./config/config.js').default(process.env.NODE_ENV || 'prod'),
