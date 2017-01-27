@@ -8,6 +8,8 @@ export default function controller(app) {
   return async (req, res, next) => {
     let paths = await app.get('paths')
 
+    console.log(req.context.router)
+
     if (typeof req.context.router === undefined || typeof req.context.router.match === 'undefined') {
       return next()
     }

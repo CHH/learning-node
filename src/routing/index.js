@@ -1,5 +1,10 @@
+import {matchMethod, matchPath} from './match'
+
+const identifierStartExpr = /[a-zA-Z]/
+const identifierExpr = /[a-zA-Z_]/
+
 export class Route {
-  constructor(path, {name, defaults, method} = {name: '', defaults: {}, method: ''}) {
+  constructor(path = '', {name, defaults, method} = {name: '', defaults: {}, method: ''}) {
     this.name = name
     this.defaults = defaults
     this.path = '' + path
@@ -13,7 +18,7 @@ export class Route {
     return this
   }
 
-  withMethod(method) {
+  matchesMethod(method) {
     this.method = method
     return this
   }
@@ -30,38 +35,30 @@ export class Route {
 
   compile() {
     // path = '/hello/world/{name}'
-    let pattern = '^'
+    let pattern = ''
     let i = 0
-    let currentVar = ''
-    let isVar = false
-    let vars = 0
+    let currentParameter = ''
+    let inParameter = false
+    let parameterCount = 0
 
     while (i < this.path.length) {
-      if (this.path.charAt(i) === '{' && /[a-zA-Z]/.test(this.path.charAt(i+1))) {
-        isVar = true
-      } else if (isVar && this.path.charAt(i) === '}') {
+      if (this.path.charAt(i) === '{' && identifierStartExpr.test(this.path.charAt(i+1))) {
+        inParameter = true
+      } else if (inParameter && this.path.charAt(i) === '}') {
         pattern += '([^/]+)'
-        this.vars.set(currentVar, ++vars)
-
-        isVar = false
-        currentVar = ''
-      } else if (isVar && /[a-zA-Z_]/.test(this.path.charAt(i))) {
-        currentVar += this.path.charAt(i)
+        this.vars.set(currentParameter, ++parameterCount)
+        inParameter = false
+        currentParameter = ''
+      } else if (inParameter && identifierExpr.test(this.path.charAt(i))) {
+        currentParameter += this.path.charAt(i)
       } else {
         pattern += this.path.charAt(i)
       }
       ++i
     }
 
-    this.pattern = pattern + '$'
+    this.pattern = new RegExp('^' + pattern + '$')
     this.compiled = true
-  }
-}
-
-class RouteMatch {
-  constructor(route, vars) {
-    this.route = route
-    this.vars = vars
   }
 }
 
@@ -81,10 +78,13 @@ class RouteCollection {
     return this
   }
 
-  named(name) {
-    let route = new Route('')
-    route.named(name)
+  has(route) {
+    return this._routes.has(route)
+  }
 
+  named(name) {
+    let route = new Route()
+    route.named(name)
     this.add(route)
 
     return route
@@ -98,7 +98,7 @@ class RouteCollection {
   }
 
   entries() {
-    return this._routes
+    return this._routes.entries()
   }
 
   atName(name) {
@@ -106,82 +106,71 @@ class RouteCollection {
   }
 }
 
+class RouteMatch {
+  constructor(req, route, vars, matched = false) {
+    this.req = req
+    this.route = route
+    this.vars = vars
+    this.matched = false
+  }
+}
+
 export class Router {
-  get routes() {
-    if (typeof this._routes === 'undefined') {
-      this._routes = new RouteCollection()
-    }
-    return this._routes
+  constructor() {
+    this.routes = new RouteCollection()
+
+    this.matchers = new Set()
+    this.matchers.add(matchMethod)
+    this.matchers.add(matchPath)
   }
 
   middleware() {
     return async (req, res, next) => {
-      let match = this.match(req)
+      let match = await this.match(req)
       req.context.router = {match}
 
       return next()
     }
   }
 
-  match(req) {
-    for (let route of this.routes.entries()) {
+  async match(req) {
+    let entries = this.routes.entries()
+
+    for (let route of entries) {
+      // TODO: fix route.path is undefined here
+      console.log(route.path)
+
+      if (!route.path) {
+        continue
+      }
+
       if (!route.compiled) {
         route.compile()
       }
 
-      if (!route.path || (route.method && route.method !== req.method)) {
-        continue
-      }
+      let matchers = this.matchers.entries()
+      matchers.reverse()
+      console.log(matchers)
 
-      let vars = Object.assign({}, route.defaults)
-      let regExp = new RegExp(route.pattern)
-      let matches = regExp.exec(req.url)
+      let match = new RouteMatch(req, route, Object.assign({}, route.defaults))
 
-      if (matches) {
-        for (let [key, pos] of route.vars) {
-          if (typeof matches[pos] !== undefined && matches[pos] !== '') {
-            vars[key] = matches[pos]
-          } else {
-            vars[key] = route.defaults[key]
-          }
+      let next = async () => {
+        let matcher = matchers.pop()
+
+        if (typeof matcher === 'undefined') {
+          return
         }
 
-        return new RouteMatch(route, vars)
+        return matcher(match, next)
       }
+
+      await next()
+
+      return match
     }
   }
 
   generate(name, parameters = {}) {
-    let route = this.routes.atName(name)
-
-    if (typeof route === 'undefined') {
-      throw new Error(`Route "${name}" not found`)
-    }
-
-    if (!route.path) {
-      throw new Error(`Route "${name}" has no path`)
-    }
-
-    if (!route.compiled) {
-      route.compile()
-    }
-
-    for (let [key, pos] of route.vars) {
-      if (typeof route.defaults[key] === 'undefined' && typeof parameters[key] === 'undefined') {
-        throw new Error(`Parameter "${key}" missing for generating URL for route ${name}`)
-      }
-
-      if (typeof parameters[key] === 'undefined') {
-        parameters[key] = route.defaults[key]
-      }
-    }
-
-    let path = route.path
-
-    for (let key of Object.keys(parameters)) {
-      path = path.replace(new RegExp(`\{${key}\}`), parameters[key])
-    }
-
-    return path
+    return this.generator.generate(name, parameters)
   }
 }
