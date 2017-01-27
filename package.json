@@ -1,0 +1,21 @@
+{
+  "name": "sparkle",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": {},
+  "author": "Christoph Hochstrasser",
+  "license": "MIT",
+  "scripts": {
+    "start": "node --harmony-async-await src/index",
+    "start-dev": "NODE_ENV=dev node --harmony-async-await src/index"
+  },
+  "dependencies": {
+    "chokidar": "^1.6.1",
+    "fs-promise": "^1.0.0",
+    "nunjucks": "^3.0.0"
+  },
+  "devDependencies": {
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.22.0",
+    "babel-register": "^6.22.0"
+  }
+}
