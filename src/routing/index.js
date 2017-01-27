@@ -98,7 +98,7 @@ export class Route {
   }
 }
 
-class RouteCollection {
+export class RouteCollection {
   constructor() {
     this._routes = new Set()
     this._named = new Map()
@@ -143,8 +143,12 @@ class RouteCollection {
 }
 
 export class Router {
-  constructor() {
-    this.routes = new RouteCollection()
+  constructor(routes) {
+    if (typeof routes === 'undefined') {
+      this.routes = new RouteCollection()
+    } else {
+      this.routes = routes
+    }
     this.generator = new UrlGenerator(this.routes)
     this.matcher = new RequestMatcher(this.routes)
   }
