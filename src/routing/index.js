@@ -4,7 +4,8 @@ import UrlGenerator from './generator'
 const identifierStartExpr = /[a-zA-Z]/
 const identifierExpr = /[a-zA-Z0-9_]/
 
-// Route class, which represents a route with a path, name, and defaults
+// Route class, which represents a route with a path, name, and defaults. TODO: Eventually
+// make instances immutable by cloning when modifying.
 export class Route {
   constructor(path = '', {name, defaults, method} = {name: '', defaults: {}, method: ''}) {
     // This name can be used to fetch the route from the RouteCollection (e.g. when
@@ -26,21 +27,26 @@ export class Route {
     this.vars = {}
   }
 
+  // Set route defaults after the route was created. Defaults are not merged with existing ones.
+  // Returns the route object itself to allow method chaining.
   withDefaults(defaults = {}) {
     this.defaults = defaults
     return this
   }
 
+  // Setup the route to match the request's HTTP method
   matchesMethod(method) {
     this.method = method
     return this
   }
 
+  // Match the given path
   matches(path) {
     this.path = path
     return this
   }
 
+  // Name the route for generating URLs through the UrlGenerator class
   named(name) {
     this.name = name
     return this
@@ -98,12 +104,30 @@ export class Route {
   }
 }
 
+// Collects routes and indexes them by name. Is shared between the RequestMatcher and the
+// UrlGenerator. Provides nice methods to make it easy to create route objects, by starting with
+// the name of pattern.
+//
+// Example:
+//
+// const routes = new RouteCollection()
+// routes.named('foo')
+//   .matches('/foo')
+//   .withDefaults({
+//     _controller: async (req, res) => res.end('hello world')
+//   })
+// routes.match('/hello/{name}')
+//   .named('hello')
+//   .withDefaults({
+//     _controller: async (req, res, {name}) => res.end(`Hello ${name}`)
+//   })
 export class RouteCollection {
   constructor() {
     this._routes = new Set()
     this._named = new Map()
   }
 
+  // Add a route object. If the name is set, then it's indexed by name.
   add(route) {
     this._routes.add(route)
 

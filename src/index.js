@@ -44,7 +44,7 @@ class App extends Container {
       const paths = await container.get('paths')
       const routes = new RouteCollection()
       const config = require(path.resolve(paths.config, 'routes')).default
-      config(routes)
+      config(container, routes)
 
       return routes
     })

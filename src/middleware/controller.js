@@ -7,6 +7,7 @@ function capitalize(str) {
 export default function controller(app) {
   return async (req, res, next) => {
     let paths = await app.get('paths')
+    let controller
 
     if (typeof req.context.router === undefined || typeof req.context.router.match === 'undefined') {
       return next()
@@ -18,18 +19,30 @@ export default function controller(app) {
       return next()
     }
 
-    let [controllerName, actionName] = match.vars._controller.split(':')
-    let moduleName = capitalize(controllerName) + 'Controller'
+    if (typeof match.vars._controller === 'string') {
+      let [controllerName, actionName] = match.vars._controller.split(':')
+      let moduleName = capitalize(controllerName) + 'Controller'
+      let instance
 
-    try {
-      let klass = require(path.resolve(paths.controllers, moduleName)).default
-      let instance = new klass(app)
+      try {
+        let klass = require(path.resolve(paths.controllers, moduleName)).default
+        instance = new klass(app)
+      } catch (error) {
+        console.error(`Error loading module ${moduleName} for controller ${match.vars._controller}`)
+        res.writeHead(404)
+        res.end('Not found')
+        return
+      }
 
-      return instance[actionName+'Action'](req, res, match.vars)
-    } catch (error) {
-      console.error(`Error loading module ${moduleName} for controller ${match.vars._controller}`)
-      res.writeHead(404)
-      res.end('Not found')
+      if (typeof instance[actionName+'Action'] === 'undefined') {
+        return next()
+      }
+
+      controller = instance[actionName+'Action'].bind(instance)
+    } else if (typeof match.vars._controller === 'function') {
+      controller = match.vars._controller
     }
+
+    return controller(req, res, match.vars)
   }
 }
