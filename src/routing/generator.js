@@ -71,7 +71,7 @@ export default class UrlGenerator {
 
     // Add parameters which were passed additionally and are not contained in the route path
     // as query string parameters to the url
-    if (querystringParameters) {
+    if (Object.keys(querystringParameters).length > 0) {
       path += '?' + querystring.stringify(querystringParameters)
     }
 
