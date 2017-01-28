@@ -24,7 +24,7 @@ export class Route {
     // index is the number of the subpattern within the RegExp. That means the parameter's
     // value can be retrieved by fetching the index from the matches returned by
     // RegExp.exec().
-    this.vars = {}
+    this.parameters = {}
   }
 
   // Set route defaults after the route was created.
@@ -88,7 +88,7 @@ export class Route {
           pattern += '([^/]*)'
         }
 
-        this.vars[currentParameter] = ++parameterCount
+        this.parameters[currentParameter] = ++parameterCount
         inParameter = false
         currentParameter = ''
       // Parameter names can only consist of a-z, A-Z, _, or numbers, continue

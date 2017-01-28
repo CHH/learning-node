@@ -14,7 +14,7 @@ export default function controller(app) {
     //
     // Example:
     //
-    //     function handle(req, res, vars) {}
+    //     function handle(req, res, parameters) {}
     //
     // Or when you want to get a specific route parameter you can use object destructuring:
     //
@@ -31,16 +31,16 @@ export default function controller(app) {
 
     // If the route has no controller attached, then pass the request on to the next middleware
     // function in the chain.
-    if (typeof match.vars._controller === 'undefined') {
+    if (typeof match.parameters._controller === 'undefined') {
       return next()
     }
 
-    if (typeof match.vars._controller === 'string') {
+    if (typeof match.parameters._controller === 'string') {
       // If the controller is and ID in the form of "controller:action", then create the module
       // name by capitalizing the first character, then attempt to load a module with that
       // name from the controllers directory. The default export is used as a constructor
       // and the method is used as the controller function.
-      let [controllerName, actionName] = match.vars._controller.split(':')
+      let [controllerName, actionName] = match.parameters._controller.split(':')
       let moduleName = capitalize(controllerName) + 'Controller'
       let instance
 
@@ -48,7 +48,7 @@ export default function controller(app) {
         let klass = require(path.resolve(paths.controllers, moduleName)).default
         instance = new klass(app)
       } catch (error) {
-        console.error(`Error loading module ${moduleName} for controller ${match.vars._controller}`)
+        console.error(`Error loading module ${moduleName} for controller ${match.parameters._controller}`)
         res.writeHead(404)
         res.end('Not found')
         return
@@ -59,11 +59,11 @@ export default function controller(app) {
       }
 
       controller = instance[actionName+'Action'].bind(instance)
-    } else if (typeof match.vars._controller === 'function') {
+    } else if (typeof match.parameters._controller === 'function') {
       // If the controller is a plain function, then use that function directly.
-      controller = match.vars._controller
+      controller = match.parameters._controller
     }
 
-    return controller(req, res, match.vars)
+    return controller(req, res, match.parameters)
   }
 }

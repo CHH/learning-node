@@ -1,10 +1,10 @@
 import querystring from 'querystring'
 
 class Match {
-  constructor(req, route, vars, matched = false) {
+  constructor(req, route, parameters, matched = false) {
     this.req = req
     this.route = route
-    this.vars = vars
+    this.parameters = parameters
     this.matched = false
   }
 }
@@ -117,27 +117,27 @@ export async function defaultMatcher(match, next) {
 
   // Parse the query string into an object
   if (indexOfQuery >= 0) {
-    match.vars.query = querystring.parse(req.url.slice(indexOfQuery + 1))
+    match.parameters.query = querystring.parse(req.url.slice(indexOfQuery + 1))
   }
 
   // Get all the route's path parameters, for looping through them and match them
   // to their default values and values matched through the regular expression
-  let keys = Object.keys(route.vars)
+  let keys = Object.keys(route.parameters)
 
   for (let i = 0; i < keys.length; i++) {
     let key = keys[i]
     // This contains the position of the value within the matches array for the variable, e.g.
-    // for a route "/hello/{name}" the vars object contains the value "1" for the "name"
+    // for a route "/hello/{name}" the parameters object contains the value "1" for the "name"
     // key.
-    let pos = route.vars[key]
+    let pos = route.parameters[key]
 
     // If the was something matched at the position for the parameter and the value
     // isn't an empty string, then we found a value.
     if (typeof matches[pos] !== undefined && matches[pos] !== '') {
-      match.vars[key] = matches[pos]
+      match.parameters[key] = matches[pos]
     // Otherwise we write the default value to the matched parameters, if there is one
     } else {
-      match.vars[key] = route.defaults[key]
+      match.parameters[key] = route.defaults[key]
     }
   }
 

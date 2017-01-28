@@ -37,11 +37,11 @@ export default class UrlGenerator {
     // set in the route and throw an error for them (to warn about missing parameters).
     // Fill in the default value if the parameter has one set in the route and the
     // parameter was left out.
-    let routeParameterNames = Object.keys(route.vars)
+    let routeParameterNames = Object.keys(route.parameters)
 
     for (let i = 0; i < routeParameterNames.length; i++) {
       let key = routeParameterNames[i]
-      let pos = route.vars[key]
+      let pos = route.parameters[key]
 
       // There is no default set for the parameter, that means it's mandatory. Throw
       // an error for leaving it out.
@@ -62,13 +62,15 @@ export default class UrlGenerator {
 
     // Replace each instance of the {parameter} in the URL with the provided parameter value
     for (let key of Object.keys(parameters)) {
-      if (typeof route.vars[key] === 'undefined') {
+      if (typeof route.parameters[key] === 'undefined') {
         querystringParameters[key] = parameters[key]
       } else {
         path = path.replace(new RegExp(`\{${key}\}`), parameters[key])
       }
     }
 
+    // Add parameters which were passed additionally and are not contained in the route path
+    // as query string parameters to the url
     if (querystringParameters) {
       path += '?' + querystring.stringify(querystringParameters)
     }
