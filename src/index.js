@@ -89,11 +89,14 @@ class App extends Container {
     })
 
     // Allows overriding existing services through the constructor.
-    for (let key of Object.keys(values)) {
-      this.set(key, values[key])
+    let keys = Object.keys(values)
+
+    for (let i = 0; i < keys.length; i++) {
+      this.set(keys[i], values[keys[i]])
     }
   }
 
+  // Helper method to add middleware
   use(middleware, mode = 'append') {
     this.extend('stack', async (stack, container) => {
       if (mode === 'append') {
