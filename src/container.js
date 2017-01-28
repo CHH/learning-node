@@ -3,6 +3,7 @@ export class Container {
     this.values = new Map()
     this.raw = new Map()
     this.keys = new Map()
+    this.factories = new Set()
 
     for (let key of Object.keys(values)) {
       this.set(key, values[key])
@@ -31,6 +32,24 @@ export class Container {
     return this.values.get(id)
   }
 
+  extend(id, asyncFn) {
+    if (!this.keys.has(id)) {
+      throw new Error('Invalid service ID')
+    }
+
+    let factory = this.values.get(id)
+    let extended = async (container) => {
+      return asyncFn(await factory(container), container)
+    }
+
+    if (this.factories.has(factory)) {
+      this.factories.delete(factory)
+      this.factories.add(extended)
+    }
+
+    return this.set(id, extended)
+  }
+
   async get(id) {
     if (!this.keys.has(id)) {
       throw new Error('Invalid service ID')
@@ -38,6 +57,10 @@ export class Container {
 
     if (this.raw.has(id) || typeof this.values.get(id).call !== 'function') {
       return this.values.get(id)
+    }
+
+    if (this.factories.has(this.values.get(id))) {
+      return this.values.get(id)(this)
     }
 
     let raw = this.values.get(id)
