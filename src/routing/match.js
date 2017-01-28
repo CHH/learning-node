@@ -1,3 +1,5 @@
+import querystring from 'querystring'
+
 class Match {
   constructor(req, route, vars, matched = false) {
     this.req = req
@@ -46,7 +48,7 @@ export class RequestMatcher {
 
       // Construct the Match object, which stores the matched parameter values
       // and passes the route, request, and defaults to the matchers
-      let match = new Match(req, route, Object.assign({}, route.defaults))
+      let match = new Match(req, route, Object.assign({query: {}}, route.defaults))
 
       // Invokes the matcher. The matcher invokes the function passed as the `next`
       // parameter if it hasn't matched and we should continue matching. If the matcher
@@ -96,12 +98,26 @@ export async function defaultMatcher(match, next) {
     route.compile()
   }
 
+  let url = req.url
+  let indexOfQuery = req.url.indexOf('?')
+
+  // If a query string was found in the URL, then strip it from the URL so path matching happens
+  // without the query string.
+  if (indexOfQuery >= 0) {
+    url = req.url.slice(0, indexOfQuery)
+  }
+
   // Run the compiled RegExp on the request's URL
-  let matches = route.pattern.exec(req.url)
+  let matches = route.pattern.exec(url)
 
   // No matches means the expression didn't match the URL. Keep looking for routes.
   if (!matches) {
     return next()
+  }
+
+  // Parse the query string into an object
+  if (indexOfQuery >= 0) {
+    match.vars.query = querystring.parse(req.url.slice(indexOfQuery + 1))
   }
 
   // Get all the route's path parameters, for looping through them and match them
