@@ -77,7 +77,12 @@ export class Route {
       // We are parsing a parameter and found the closing brace, so add the parameter
       // to the vars with the index. Reset the current parameter name.
       } else if (inParameter && this.path.charAt(i) === '}') {
-        pattern += '([^/]+)'
+        if (typeof this.defaults[currentParameter] === 'undefined') {
+          pattern += '([^/]+)'
+        } else {
+          pattern += '([^/]*)'
+        }
+
         this.vars[currentParameter] = ++parameterCount
         inParameter = false
         currentParameter = ''
@@ -122,9 +127,11 @@ export class Route {
 //     _controller: async (req, res, {name}) => res.end(`Hello ${name}`)
 //   })
 export class RouteCollection {
-  constructor() {
+  constructor(prefix = '') {
+    this.prefix = prefix
     this._routes = new Set()
     this._named = new Map()
+    this._collections = new Set()
   }
 
   // Add a route object. If the name is set, then it's indexed by name.
@@ -138,8 +145,19 @@ export class RouteCollection {
     return this
   }
 
+  addCollection(collection) {
+    this._collections.add(collection)
+    return this
+  }
+
   has(route) {
     return this._routes.has(route)
+  }
+
+  mounted(path, fn) {
+    let collection = new RouteCollection(path)
+    fn.call(collection, collection)
+    return this.addCollection(collection)
   }
 
   named(name) {
@@ -158,7 +176,24 @@ export class RouteCollection {
   }
 
   entries() {
-    return this._routes
+    if (typeof this._entries !== 'undefined') {
+      return this._entries
+    }
+
+    this._entries = []
+
+    for (let route of this._routes) {
+      this._entries.push(route)
+    }
+
+    for (let collection of this._collections) {
+      for (let route of collection.entries()) {
+        route.path = collection.prefix + route.path
+        this._entries.push(route)
+      }
+    }
+
+    return this._entries
   }
 
   atName(name) {

@@ -1,3 +1,5 @@
+import querystring from 'querystring'
+
 // Generates URLs for routes
 export default class UrlGenerator {
   // Takes a RouteCollection object consisting of all routes, for looking up a
@@ -56,11 +58,19 @@ export default class UrlGenerator {
 
     // The path of the route, including all parameters, e.g. "/hello/world/{name}"
     let path = route.path
+    let querystringParameters = {}
 
-    // Replace each instance of the {parameter} in the URL with the provided parameter
-    // value
+    // Replace each instance of the {parameter} in the URL with the provided parameter value
     for (let key of Object.keys(parameters)) {
-      path = path.replace(new RegExp(`\{${key}\}`), parameters[key])
+      if (typeof route.vars[key] === 'undefined') {
+        querystringParameters[key] = parameters[key]
+      } else {
+        path = path.replace(new RegExp(`\{${key}\}`), parameters[key])
+      }
+    }
+
+    if (querystringParameters) {
+      path += '?' + querystring.stringify(querystringParameters)
     }
 
     // Returns the path, with all parameter placeholders replaced with the actual
