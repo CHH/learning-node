@@ -220,16 +220,11 @@ export class Router {
 
   middleware() {
     return async (req, res, next) => {
-      let match = await this.match(req)
+      let match = await this.matcher.match(req)
       req.context.router = {match}
 
       return next()
     }
-  }
-
-  // Matches the request to a route using the RequestMatcher
-  async match(req) {
-    return this.matcher.match(req)
   }
 
   // Generate a path for a route, given the paramaters, using the UrlGenerator

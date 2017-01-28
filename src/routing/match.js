@@ -24,7 +24,11 @@ export class RequestMatcher {
 
   async match(req) {
     // Loop through all known routes
-    for (let route of this.routes.entries()) {
+    let entries = this.routes.entries()
+
+    for (let i = 0; i < entries.length; i++) {
+      let route = entries[i]
+
       // Skip the route and do not do anything further if there isn't any path
       // we can match. A route can only have no path if it wasn't setup correctly.
       if (!route.path) {
