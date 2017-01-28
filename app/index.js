@@ -1,5 +1,6 @@
 import path from 'path'
 import {createApp} from '../src'
+import session from '../src/middleware/session'
 
 const app = createApp(Object.assign(
     require('./config/config.js').default(process.env.NODE_ENV || 'prod'),
@@ -13,5 +14,6 @@ const requestLogger = async (req, res, next) => {
 }
 
 app.use(requestLogger, 'prepend')
+app.use(session(), 'prepend')
 
 export default app

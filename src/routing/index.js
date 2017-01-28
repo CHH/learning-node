@@ -51,7 +51,7 @@ export class Route {
     return this
   }
 
-  // Name the route for generating URLs through the UrlGenerator class
+  // Name the route for accessing it later on by name
   named(name) {
     this.name = name
     return this
@@ -73,7 +73,7 @@ export class Route {
     let parameterCount = 0
 
     // Loop over all characters in the route, one by one, to find the special characters
-    // denoting parameters
+    // denoting parameters and parse them
     while (i < this.path.length) {
       // We found the start of a parameter expression, e.g. {name}, and it starts
       // with a character.
@@ -107,8 +107,8 @@ export class Route {
     this.pattern = new RegExp('^' + pattern + '$')
 
     // Mark the route as compiled, so other parts of the code can avoid expensive
-    // compilation when it isn't necessary. We do compile always when compile() is
-    // called (not skipping when the flag was set), to allow consumers to recompile
+    // compilation when it isn't necessary. We do always compile the route when compile() is
+    // called (not skipping when the flag was already set) to allow consumers to recompile
     // routes when necessary, e.g. when changing the path after it was already compiled.
     this.compiled = true
   }
@@ -121,16 +121,12 @@ export class Route {
 // Example:
 //
 // const routes = new RouteCollection()
-// routes.named('foo')
-//   .matches('/foo')
-//   .withDefaults({
-//     _controller: async (req, res) => res.end('hello world')
-//   })
+// routes.named('foo').matches('/foo')
+//   .to(async (req, res) => res.end('hello world'))
 // routes.match('/hello/{name}')
+//   .to(async (req, res, {name}) => res.end(`Hello ${name}`))
 //   .named('hello')
-//   .withDefaults({
-//     _controller: async (req, res, {name}) => res.end(`Hello ${name}`)
-//   })
+//
 export class RouteCollection {
   constructor(prefix = '') {
     this.prefix = prefix
