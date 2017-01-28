@@ -10,6 +10,7 @@ const app = createApp(Object.assign(
 const requestLogger = async (req, res, next) => {
   // Run all other middleware functions first before we log
   await next()
+  console.log(req.session.id, req.session.values)
   console.log(`${req.method} ${req.url} => ${res.statusCode}`)
 }
 

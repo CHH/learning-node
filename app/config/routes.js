@@ -1,13 +1,7 @@
 export default (app, route) => {
-  route.named('hello_world')
-    .matches('/hello/world')
-    .to('hello:index')
-    .withDefaults({name: 'World'})
-
   route.named('hello')
-    .matches('/hello/{name}')
+    .matches('/hello')
     .to('hello:index')
-    .withDefaults({name: ''})
 
   route.named('foo').matches('/foo/{bar}').to(async (req, res, {bar}) => {
     res.end(`Foo: ${bar}`)

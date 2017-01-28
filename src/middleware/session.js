@@ -10,7 +10,9 @@ class Session {
   destroy(res) {
     res.setHeader('Set-Cookie', cookie.serialize('SESSION', '', {
       httpOnly: true,
-      maxAge: 0
+      maxAge: 0,
+      domain: 'localhost',
+      path: '/'
     }))
   }
 }
@@ -22,21 +24,23 @@ export default function session() {
     let cookies = cookie.parse(req.headers.cookie || '')
     let id = cookies['SESSION']
 
-    if (typeof id === 'undefined' || !storage.get(id)) {
+    if (typeof id === 'undefined' || typeof storage.get(id) === 'undefined') {
       id = crypto.randomBytes(16).toString('hex')
 
       const session = new Session(id)
       storage.set(id, session)
 
-      res.setHeader('Set-Cookie', cookie.serialize('SESSION', String(id), {
-        httpOnly: true,
-        maxAge: 60 * 60 * 24,
-      }))
-
       req.session = session
     } else {
       req.session = storage.get(id)
     }
+
+    res.setHeader('Set-Cookie', cookie.serialize('SESSION', String(id), {
+      httpOnly: true,
+      maxAge: 60 * 60 * 24,
+      domain: 'localhost',
+      path: '/'
+    }))
 
     return next()
   }

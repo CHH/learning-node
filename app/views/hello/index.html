@@ -1,1 +1,12 @@
+<h2>What’s your name?</h2>
+<form method="post" action="">
+    <label>
+        Your name
+        <input type="text" name="name" value="{{ name }}">
+    </label>
+    <button type="submit">Say</button>
+</form>
+
+{% if name %}
 <h2>Hello {{ name }}!</h2>
+{% endif %}
