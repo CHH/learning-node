@@ -27,10 +27,15 @@ export class Route {
     this.vars = {}
   }
 
-  // Set route defaults after the route was created. Defaults are not merged with existing ones.
+  // Set route defaults after the route was created.
   // Returns the route object itself to allow method chaining.
   withDefaults(defaults = {}) {
-    this.defaults = defaults
+    Object.assign(this.defaults, defaults)
+    return this
+  }
+
+  to(controller) {
+    this.defaults._controller = controller
     return this
   }
 
