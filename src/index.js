@@ -94,12 +94,27 @@ class App extends Container {
     }
   }
 
+  use(middleware, mode = 'append') {
+    this.extend('stack', async (stack, container) => {
+      if (mode === 'append') {
+        stack.push(middleware)
+      } else if (mode === 'prepend') {
+        stack.unshift(middleware)
+      }
+
+      return stack
+    })
+
+    return this
+  }
+
   // Starts the http server
   async start() {
     console.log("Starting server")
 
     let root = await this.get('root')
     let paths = await this.get('paths')
+    let stack = await this.get('stack')
 
     if (await this.get('watch')) {
       console.log(`Watching ${root} for changes`)
@@ -135,19 +150,14 @@ class App extends Container {
         if (filename === 'routes.js') {
           delete require.cache[path.resolve(paths.config, filename)]
 
-          let routes = this.getRaw('router.routes')
-          this.set('router.routes', routes)
+          this.set('router.routes', this.getRaw('router.routes'))
+          this.set('router', this.getRaw('router'))
+          this.set('stack', this.getRaw('stack'))
 
-          let router = this.getRaw('router')
-          this.set('router', router)
-
-          let stack = this.getRaw('stack')
-          this.set('stack', stack)
+          stack = await this.get('stack')
         }
       })
     }
-
-    let stack = await this.get('stack')
 
     const server = http.createServer(async (req, res) => {
       try {

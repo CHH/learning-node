@@ -173,6 +173,7 @@ export class Router {
     } else {
       this.routes = routes
     }
+
     this.generator = new UrlGenerator(this.routes)
     this.matcher = new RequestMatcher(this.routes)
   }

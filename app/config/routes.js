@@ -9,7 +9,6 @@ export default (app, route) => {
 
   route.named('foo')
     .matches('/foo/{bar}')
-    .matchesMethod('POST')
     .withDefaults({_controller: (req, res, {bar}) => {
       res.end(`Foo: ${bar}`)
     }})
