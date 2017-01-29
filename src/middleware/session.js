@@ -1,47 +1,33 @@
 import cookie from 'cookie'
 import crypto from 'crypto'
+import {SessionHandler} from '../session'
 
-class Session {
-  constructor(id) {
-    this.id = id
-    this.values = new Map()
+export default function session(storage) {
+  if (typeof storage === 'undefined') {
+    storage = new SessionHandler()
   }
-
-  destroy(res) {
-    res.setHeader('Set-Cookie', cookie.serialize('SESSION', '', {
-      httpOnly: true,
-      maxAge: 0,
-      domain: 'localhost',
-      path: '/'
-    }))
-  }
-}
-
-export default function session() {
-  const storage = new Map()
 
   return async (req, res, next) => {
     let cookies = cookie.parse(req.headers.cookie || '')
-    let id = cookies['SESSION']
+    let session
 
-    if (typeof id === 'undefined' || typeof storage.get(id) === 'undefined') {
-      id = crypto.randomBytes(16).toString('hex')
-
-      const session = new Session(id)
-      storage.set(id, session)
-
+    if (typeof cookies['SESSION'] === 'undefined' || typeof storage.get(cookies['SESSION']) === 'undefined') {
+      session = storage.create()
+      storage.save(session.id, session)
       req.session = session
     } else {
-      req.session = storage.get(id)
+      req.session = storage.get(cookies['SESSION'])
     }
 
-    res.setHeader('Set-Cookie', cookie.serialize('SESSION', String(id), {
+    res.setHeader('Set-Cookie', cookie.serialize('SESSION', String(session.id), {
       httpOnly: true,
       maxAge: 60 * 60 * 24,
       domain: 'localhost',
       path: '/'
     }))
 
-    return next()
+    await next()
+
+    storage.flush()
   }
 }

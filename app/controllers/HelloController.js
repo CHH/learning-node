@@ -7,12 +7,12 @@ export default class HelloController extends AppController {
 
     if (req.method === 'POST') {
       let data = await this.readFormData(req)
-      req.session.values.set('name', data.name)
+      req.session.set('name', data.name)
 
       return this.redirectToRoute(res, 'hello')
     }
 
-    name = req.session.values.get('name')
+    name = req.session.get('name')
 
     return this.render(res, 'hello/index.html', {name})
   }
