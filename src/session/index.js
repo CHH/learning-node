@@ -1,20 +1,8 @@
 import cookie from 'cookie'
 import crypto from 'crypto'
 import path from 'path'
-import _mkdirp from 'mkdirp'
 import fs from 'fs-promise'
-
-async function mkdirp(path, opts) {
-  return new Promise((resolve, reject) => {
-    _mkdirp(path, opts, (err) => {
-      if (err) {
-        reject(err)
-      } else {
-        resolve()
-      }
-    })
-  })
-}
+import mkdirp from '../util/mkdirp'
 
 export function session(storage) {
   if (typeof storage === 'undefined') {
@@ -62,8 +50,7 @@ export class SessionHandler {
   }
 
   async create() {
-    let session = new Session(this.identifier())
-    return session
+    return new Session(await this.identifier())
   }
 
   async find(id) {
