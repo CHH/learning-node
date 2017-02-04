@@ -2,15 +2,20 @@ import path from 'path'
 import {createApp} from '../src'
 import {session, SimpleFileHandler} from '../src/session'
 
+const root = path.resolve(__dirname, './')
+
 const app = createApp(Object.assign(
     require('./config/config.js').default(process.env.NODE_ENV || 'prod'),
-    {root: path.resolve(__dirname, './')}
+    {root}
 ))
 
-const requestLogger = async (req, res, next) => {
+const requestLogger = async (context, next) => {
   // Run all other middleware functions first before we log
   await next()
-  console.log(req.session.id, req.session.values)
+
+  let {req, res} = context
+
+  console.log(context.get('session').id, context.get('session').values)
   console.log(`${req.method} ${req.url} => ${res.statusCode}`)
 }
 

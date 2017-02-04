@@ -1,5 +1,5 @@
 export default function html() {
-  return async (req, res, next) => {
+  return async ({res}, next) => {
     if (!res.getHeader('Content-Type')) {
       res.setHeader('Content-Type', 'text/html')
     }

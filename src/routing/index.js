@@ -215,9 +215,14 @@ export class Router {
   }
 
   middleware() {
-    return async (req, res, next) => {
+    return async (context, next) => {
+      let {req} = context
       let match = await this.matcher.match(req)
-      req.context.router = {match}
+
+      if (typeof match !== 'undefined') {
+        context.set('route', match.route)
+        context.set('parameters', match.parameters)
+      }
 
       return next()
     }

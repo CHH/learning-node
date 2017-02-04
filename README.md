@@ -12,9 +12,8 @@
 - [x] Add App.use() for applying middleware
 - [x] Add Route.to() for setting the controller
 - [x] Add simple in-memory sessions
-- [ ] Add something to store middleware context
-- [ ] Add custom Request and Response classes to encapsulate raw http.IncomingMessage and http.ServerResponse
-    - [ ] Add conveniences like cookie handling, sessions, view rendering
+- [x] Add something to store middleware context
+- [ ] Add conveniences like cookie handling, sessions, view rendering
 - [ ] Fix hot reloading for routes and make hot reloading something that usually works for 
       every service that depends on loading a config file
 - [ ] Find a more "Javascript" way to do service location/dependency injection

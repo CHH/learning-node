@@ -2,33 +2,17 @@ import AppController from './AppController'
 import querystring from 'querystring'
 
 export default class HelloController extends AppController {
-  async indexAction(req, res) {
-    let name = ''
+  async indexAction(context) {
+    const {req} = context
 
     if (req.method === 'POST') {
-      let data = await this.readFormData(req)
-      req.session.set('name', data.name)
+      let {name} = await context.form()
+      context.get('session').set('name', name)
 
-      return this.redirectToRoute(res, 'hello')
+      return context.redirectToRoute('hello')
+    } else {
+      let name = context.get('session').get('name')
+      return context.render('hello/index.html', {name})
     }
-
-    name = req.session.get('name')
-
-    return this.render(res, 'hello/index.html', {name})
-  }
-
-  async readFormData(req) {
-    return new Promise((resolve, reject) => {
-      let body = ''
-
-      req.setEncoding('utf8')
-
-      req.on('data', (chunk) => {
-        body += chunk
-      })
-      req.on('end', () => {
-        resolve(querystring.parse(body))
-      })
-    })
   }
 }

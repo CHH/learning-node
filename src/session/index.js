@@ -9,7 +9,8 @@ export function session(storage) {
     storage = new SessionHandler()
   }
 
-  return async (req, res, next) => {
+  return async (context, next) => {
+    let {req, res} = context
     let cookies = cookie.parse(req.headers.cookie || '')
     let session
 
@@ -25,7 +26,7 @@ export function session(storage) {
       session = await storage.find(cookies['SESSION'])
     }
 
-    req.session = session
+    context.set('session', session)
 
     res.setHeader('Set-Cookie', cookie.serialize('SESSION', String(session.id), {
       httpOnly: true,
@@ -34,9 +35,11 @@ export function session(storage) {
       path: '/'
     }))
 
+    // Let everything else run
     await next()
 
-    return storage.flush(req.session)
+    // Flush the storage when every other middleware has done its thing
+    return storage.flush(context.get('session'))
   }
 }
 

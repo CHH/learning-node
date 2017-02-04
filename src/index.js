@@ -8,6 +8,7 @@ import controller from './middleware/controller'
 import {Container} from './container'
 import {Stack} from './middleware'
 import {Router, RouteCollection} from './routing'
+import Context from './context'
 
 // Creates an app and is the public API of the package
 export function createApp(values) {
@@ -115,8 +116,11 @@ class App extends Container {
   async start() {
     console.log("Starting server")
 
-    let root = await this.get('root')
-    let paths = await this.get('paths')
+    const root = await this.get('root')
+    const paths = await this.get('paths')
+    const router = await this.get('router')
+    const view = await this.get('view')
+
     let stack = await this.get('stack')
 
     if (await this.get('watch')) {
@@ -163,8 +167,10 @@ class App extends Container {
     }
 
     const server = http.createServer(async (req, res) => {
+      const context = new Context({req, res, container: this})
+
       try {
-        await stack.run(req, res)
+        await stack.run(context)
 
         if (!res.finished) {
           res.writeHead(404)
@@ -178,9 +184,10 @@ class App extends Container {
       }
     })
 
-    let port = await this.get('port')
+    const port = await this.get('port')
 
-    console.log(`Listening on port ${port}`)
-    server.listen(port)
+    server.listen(port, () => {
+      console.log(`Listening on port ${port}`)
+    })
   }
 }

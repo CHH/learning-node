@@ -10,6 +10,17 @@ export class Container {
     }
   }
 
+  copy() {
+    let container = new Container()
+
+    container.values = new Map(this.values)
+    container.raw = new Map(this.raw)
+    container.keys = new Map(this.keys)
+    container.factories = new Set(this.factories)
+
+    return container
+  }
+
   set(id, raw) {
     this.raw.delete(id)
     this.values.set(id, raw)
