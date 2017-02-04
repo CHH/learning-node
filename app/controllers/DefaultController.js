@@ -4,4 +4,8 @@ export default class DefaultController extends AppController {
   async indexAction(context) {
     return context.redirectToRoute('hello', {name: 'Christoph', foo: 'bar'})
   }
+
+  async missingRouteAction(context) {
+    return context.redirectToRoute('foobarbazboo')
+  }
 }
