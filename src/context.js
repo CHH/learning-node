@@ -51,7 +51,7 @@ export default class Context {
         }
 
         this.res.writeHead(statusCode)
-        this.res.end(buf)
+        this.res.end(buf, 'utf8')
 
         resolve()
       })

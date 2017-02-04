@@ -1,4 +1,10 @@
-export class Container {
+class Errors {
+  static serviceNotFound(id) {
+    return new Error(`Invalid service ID "${id}"`)
+  }
+}
+
+export default class Container {
   constructor(values = {}) {
     this.values = new Map()
     this.raw = new Map()
@@ -45,7 +51,7 @@ export class Container {
 
   extend(id, asyncFn) {
     if (!this.keys.has(id)) {
-      throw new Error('Invalid service ID')
+      throw Errors.serviceNotFound(id)
     }
 
     let factory = this.values.get(id)
@@ -63,7 +69,7 @@ export class Container {
 
   async get(id) {
     if (!this.keys.has(id)) {
-      throw new Error('Invalid service ID')
+      throw Errors.serviceNotFound(id)
     }
 
     if (this.raw.has(id) || typeof this.values.get(id).call !== 'function') {

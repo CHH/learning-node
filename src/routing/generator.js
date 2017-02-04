@@ -1,5 +1,17 @@
 import querystring from 'querystring'
 
+class Errors {
+  static routeNotFound(route) {
+    return new Error(`No such route "${route.name}"`)
+  }
+  static routeHasNoPath(route) {
+    return new Error(`Route "${route.name}" has no path`)
+  }
+  static routeParameterMissing(route, parameter) {
+    return new Error(`Route "${route.name} requires the parameter "${parameter}", that wasn't passed`)
+  }
+}
+
 // Generates URLs for routes
 export default class UrlGenerator {
   // Takes a RouteCollection object consisting of all routes, for looking up a
@@ -19,13 +31,13 @@ export default class UrlGenerator {
 
     // Route was not found
     if (typeof route === 'undefined') {
-      throw new Error(`Route "${name}" not found`)
+      throw Errors.routeNotFound(route)
     }
 
     // Error when a route hasn't had a path set, which happens if the route was
     // initialized with named(), but matches() hasn't been called
     if (!route.path) {
-      throw new Error(`Route "${name}" has no path`)
+      throw Errors.routeHasNoPath(route)
     }
 
     // Compile route patterns if the route wasn't compiled before
@@ -44,9 +56,9 @@ export default class UrlGenerator {
       let pos = route.parameters[key]
 
       // There is no default set for the parameter, that means it's mandatory. Throw
-      // an error for leaving it out.
-      if (typeof route.defaults[key] === 'undefined' && typeof parameters[key] === 'undefined') {
-        throw new Error(`Parameter "${key}" missing for generating URL for route ${name}`)
+      // an error when the parameter was not passed to this method.
+      if (typeof parameters[key] === 'undefined' && typeof route.defaults[key] === 'undefined') {
+        throw Errors.routeParameterMissing(route, key)
       }
 
       // Set the default value if the parameter wasn't passed to the generate() method
@@ -63,20 +75,18 @@ export default class UrlGenerator {
     // Replace each instance of the {parameter} in the URL with the provided parameter value
     for (let key of Object.keys(parameters)) {
       if (typeof route.parameters[key] === 'undefined') {
+        // If a parameter is passed that isn't part of the route's path, then add the parameter
+        // to the query string
         querystringParameters[key] = parameters[key]
       } else {
         path = path.replace(new RegExp(`\{${key}\}`), parameters[key])
       }
     }
 
-    // Add parameters which were passed additionally and are not contained in the route path
-    // as query string parameters to the url
     if (Object.keys(querystringParameters).length > 0) {
       path += '?' + querystring.stringify(querystringParameters)
     }
 
-    // Returns the path, with all parameter placeholders replaced with the actual
-    // value
     return path
   }
 }

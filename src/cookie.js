@@ -1,9 +1,9 @@
 import cookie from 'cookie'
 
 export default class CookieData {
-  constructor(req) {
+  constructor(req, data = {}) {
     this.req = req
-    this.data = {}
+    this.data = data
     this.parsed = false
   }
 

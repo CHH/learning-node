@@ -5,9 +5,10 @@ import crypto from 'crypto'
 import nunjucks from 'nunjucks'
 import html from './middleware/html'
 import controller from './middleware/controller'
-import {Container} from './container'
+import Container from './container'
 import {Stack} from './middleware'
-import {Router, RouteCollection} from './routing'
+import Router from './routing'
+import RouteCollection from './routing/route-collection'
 import Context from './context'
 
 // Creates an app and is the public API of the package
