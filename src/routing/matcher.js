@@ -1,4 +1,4 @@
-import querystring from 'querystring'
+import {parse} from 'url'
 
 class Match {
   constructor(req, route, parameters, matched = false) {
@@ -10,7 +10,7 @@ class Match {
 }
 
 // Matches requests to routes
-export class RequestMatcher {
+export default class RequestMatcher {
   constructor(routes) {
     this.routes = routes
     this.matchers = []
@@ -56,21 +56,25 @@ export class RequestMatcher {
 
       // Invokes the matcher. The matcher invokes the function passed as the `next`
       // parameter if it hasn't matched and we should continue matching. If the matcher
-      // found a match, it just returns without calling `next()` and sets Match.matched
-      // to `true`.
-      let next = async () => {
+      // found a match, sets Match.matched to `true` and calls next().
+      let next = async (err, result) => {
         let matcher = matchers.pop()
 
-        if (typeof matcher === 'undefined') {
+        if (err) {
+          console.error(err)
           return
         }
 
-        return matcher(match, next)
+        if (typeof matcher === 'undefined' || result.matched === true) {
+          return
+        }
+
+        return matcher(result, next)
       }
 
       // We start off the first matcher here, all further ones are invoked when
       // the matchers call next()
-      await next()
+      await next(null, match)
 
       // We have a match, return the match so it can be acted upon, e.g. looking
       // for a controller to invoke
@@ -82,47 +86,38 @@ export class RequestMatcher {
 }
 
 // Matches the method and regexp pattern of the route object to the request
-export async function defaultMatcher(match, next) {
+async function defaultMatcher(match, next) {
   let {route, req} = match
 
   // If the method is configured on the route and the method doesn't match, then
   // return and continue looking for a matching route
-  if (route.method && route.method !== req.method) {
-    return next()
+  if (typeof route.method !== 'undefined' && Array(route.method).length > 0 && Array(route.method).indexOf(req.method) === -1) {
+    return next(null, match)
   }
 
   // Routes without a path can't be matched
   if (!route.path) {
-    return next()
+    return next(null, match)
   }
 
-  // Compile the route if it wasn't compiled before and we have access to the
+  // Compile the route if it wasn't compiled before so we have access to the
   // route.pattern property
   if (!route.compiled) {
     route.compile()
   }
 
-  let url = req.url
-  let indexOfQuery = req.url.indexOf('?')
-
-  // If a query string was found in the URL, then strip it from the URL so path matching happens
-  // without the query string.
-  if (indexOfQuery >= 0) {
-    url = req.url.slice(0, indexOfQuery)
-  }
+  // Parse the request URL to access pathname and query parameters
+  let url = parse(req.url, true)
 
   // Run the compiled RegExp on the request's URL
-  let matches = route.pattern.exec(url)
+  let matches = route.pattern.exec(url.pathname)
 
   // No matches means the expression didn't match the URL. Keep looking for routes.
   if (!matches) {
-    return next()
+    return next(null, match)
   }
 
-  // Parse the query string into an object
-  if (indexOfQuery >= 0) {
-    match.parameters.query = querystring.parse(req.url.slice(indexOfQuery + 1))
-  }
+  match.parameters.query = url.query
 
   // Get all the route's path parameters, for looping through them and match them
   // to their default values and values matched through the regular expression
@@ -148,4 +143,6 @@ export async function defaultMatcher(match, next) {
   // We matched something, this cancels the matching process. Also we don't call next()
   // here, so no other matchers are called after this one.
   match.matched = true
+
+  return next(null, match)
 }
