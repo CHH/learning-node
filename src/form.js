@@ -23,15 +23,17 @@ export default class FormData {
 
       this.req.setEncoding('utf8')
 
-      this.req.on('data', (chunk) => {
-        body += chunk
-      })
+      this.req.on('readable', () => {
+        let buf = this.req.read()
 
-      this.req.on('end', () => {
-        this.data = querystring.parse(body)
-        this.parsed = true
+        if (buf === null) {
+          this.data = querystring.parse(body)
+          this.parsed = true
 
-        resolve(this.data)
+          resolve(this.data)
+        } else {
+          body += buf
+        }
       })
     })
   }
