@@ -1,8 +1,8 @@
-import cookie from 'cookie'
 import crypto from 'crypto'
 import path from 'path'
 import fs from 'fs-promise'
 import mkdirp from '../util/mkdirp'
+import cookie from 'cookie'
 
 export function session(storage) {
   if (typeof storage === 'undefined') {
@@ -11,19 +11,19 @@ export function session(storage) {
 
   return async (context, next) => {
     let {req, res} = context
-    let cookies = cookie.parse(req.headers.cookie || '')
+    let sessionId = await context.cookie.get('SESSION')
     let session
 
-    if (typeof cookies['SESSION'] === 'undefined') {
+    if (typeof sessionId === 'undefined') {
       session = await storage.create()
       session.dirty = true
       await storage.save(session)
-    } else if (typeof await storage.find(cookies['SESSION']) === 'undefined') {
-      session = new Session(cookies['SESSION'])
+    } else if (typeof await storage.find(sessionId) === 'undefined') {
+      session = new Session(sessionId)
       session.dirty = true
       await storage.save(session)
     } else {
-      session = await storage.find(cookies['SESSION'])
+      session = await storage.find(sessionId)
     }
 
     context.set('session', session)

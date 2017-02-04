@@ -13,8 +13,8 @@
 - [x] Add Route.to() for setting the controller
 - [x] Add simple in-memory sessions
 - [x] Add something to store middleware context
-- [ ] Add conveniences like cookie handling, sessions, view rendering
+- [x] Add conveniences like cookie handling, sessions, view rendering
 - [ ] Fix hot reloading for routes and make hot reloading something that usually works for 
       every service that depends on loading a config file
-- [ ] Find a more "Javascript" way to do service location/dependency injection
+- [ ] Find a more "Javascript-y" way to do service location/dependency injection
 - [ ] Request scoped services

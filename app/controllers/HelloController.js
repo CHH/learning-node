@@ -6,12 +6,13 @@ export default class HelloController extends AppController {
     const {req} = context
 
     if (req.method === 'POST') {
-      let {name} = await context.form()
+      let name = await context.form.get('name')
       context.get('session').set('name', name)
 
       return context.redirectToRoute('hello')
     } else {
       let name = context.get('session').get('name')
+
       return context.render('hello/index.html', {name})
     }
   }

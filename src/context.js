@@ -1,4 +1,5 @@
-import querystring from 'querystring'
+import FormData from './form'
+import CookieData from './cookie'
 
 export default class Context {
   constructor({req, res, container}) {
@@ -6,6 +7,8 @@ export default class Context {
     this.res = res
     this.container = container
     this.values = new Map()
+    this.form = new FormData(req)
+    this.cookie = new CookieData(req)
   }
 
   set(key, value) {
@@ -51,28 +54,6 @@ export default class Context {
         this.res.end(buf)
 
         resolve()
-      })
-    })
-  }
-
-  async form() {
-    if (this.has('form')) {
-      return this.get('form')
-    }
-
-    return new Promise((resolve, reject) => {
-      let body = ''
-
-      this.req.setEncoding('utf8')
-
-      this.req.on('data', (chunk) => {
-        body += chunk
-      })
-
-      this.req.on('end', () => {
-        this.set('form', querystring.parse(body))
-
-        resolve(this.get('form'))
       })
     })
   }
