@@ -228,7 +228,7 @@ export class Router {
     }
   }
 
-  // Generate a path for a route, given the paramaters, using the UrlGenerator
+  // Generate a path for a route, given the parameters, using the UrlGenerator
   generate(name, parameters = {}) {
     return this.generator.generate(name, parameters)
   }
