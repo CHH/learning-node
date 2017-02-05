@@ -1,8 +1,9 @@
 export default class AppController {
-  constructor() {
-  }
-
   setContainer(container) {
     this.container = container
+  }
+
+  async get(service) {
+    return this.container.get(service)
   }
 }

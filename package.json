@@ -6,8 +6,8 @@
   "author": "Christoph Hochstrasser",
   "license": "MIT",
   "scripts": {
-    "start": "node --harmony-async-await bin/sparkle",
-    "start-dev": "NODE_ENV=dev node --harmony-async-await bin/sparkle"
+    "start": "pm2 delete sparkle && NODE_ENV=prod pm2 start -n sparkle --watch src/ --watch app/ --ignore-watch \"app/var .git\"  --interpreter-args '--harmony-async-await' bin/sparkle.js",
+    "start-dev": "pm2 delete sparkle && NODE_ENV=dev pm2 start -n sparkle --watch src/ --watch app/ --ignore-watch \"app/var .git\"  --interpreter-args '--harmony-async-await' bin/sparkle.js"
   },
   "dependencies": {
     "babel-plugin-transform-es2015-modules-commonjs": "^6.22.0",
@@ -16,6 +16,7 @@
     "cookie": "^0.3.1",
     "fs-promise": "^1.0.0",
     "mkdirp": "^0.5.1",
-    "nunjucks": "^3.0.0"
+    "nunjucks": "^3.0.0",
+    "pm2": "^2.3.0"
   }
 }

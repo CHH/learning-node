@@ -50,6 +50,7 @@ export default class Context {
           return
         }
 
+        this.res.setHeader('Content-Type', 'text/html')
         this.res.writeHead(statusCode)
         this.res.end(buf, 'utf8')
 

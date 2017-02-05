@@ -16,5 +16,8 @@
 - [x] Add conveniences like cookie handling, sessions, view rendering
 - [ ] Fix hot reloading for routes and make hot reloading something that usually works for 
       every service that depends on loading a config file
-- [ ] Find a more "Javascript-y" way to do service location/dependency injection
-- [ ] Request scoped services
+    - [ ] Use a process manager like PM2?
+- [ ] Static file serving
+- [ ] Look for a basic ORM to use
+- [ ] Framework for command line scripts
+- [ ] Better, more modular app folder

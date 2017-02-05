@@ -14,8 +14,9 @@ const requestLogger = async (context, next) => {
   await next()
 
   let {req, res} = context
+  let session = context.get('session')
 
-  console.log(context.get('session').id, context.get('session').values)
+  console.log(session.id, session.values)
   console.log(`${req.method} ${req.url} => ${res.statusCode}`)
 }
 
