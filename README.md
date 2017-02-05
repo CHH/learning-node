@@ -14,9 +14,9 @@
 - [x] Add simple in-memory sessions
 - [x] Add something to store middleware context
 - [x] Add conveniences like cookie handling, sessions, view rendering
-- [ ] Fix hot reloading for routes and make hot reloading something that usually works for 
+- [x] Fix hot reloading for routes and make hot reloading something that usually works for 
       every service that depends on loading a config file
-    - [ ] Use a process manager like PM2?
+    - [x] Use a process manager like PM2?
 - [ ] Static file serving
 - [ ] Look for a basic ORM to use
 - [ ] Framework for command line scripts
